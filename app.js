@@ -60,58 +60,68 @@ app.get('/create-quotation', authenticateUser, (req, res) => {
 });
 
 app.post('/generate-invoice', authenticateUser, async (req, res) => {
-    const quotationData = req.body;
-    
-    // Read the template file
-    const template = fs.readFileSync(path.join(__dirname, 'templates/index.html'), 'utf8');
-    
-    // Create table rows for parts
-    const partsRows = quotationData.parts.map(part => `
-        <tr>
-            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.partNo}</td>
-            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.qty}</td>
-            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.dc}</td>
-            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.leadTime}</td>
-            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.condition}</td>
-            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.currency} ${part.pricePerUnit}</td>
-            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.currency} ${part.otherCharges}</td>
-        </tr>
-    `).join('');
-    
-    // Replace placeholders with actual data
-    let html = template
-        .replace('[Number]', quotationData.quotationNo)
-        .replace('[Date]', quotationData.date)
-        .replace('<!-- Parts rows will be inserted here -->', partsRows);
-    
-    // Generate PDF
-    const options = {
-        format: 'A4',
-        border: {
-            top: "0.5in",
-            right: "0.5in",
-            bottom: "0.5in",
-            left: "0.5in"
-        }
-    };
-    
-    pdf.create(html, options).toBuffer((err, buffer) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Error generating PDF');
-        }
+    try {
+        const quotationData = req.body;
         
-        if (req.body.action === 'email') {
-            // Send email with PDF attachment
-            sendEmail(quotationData.clientName, quotationData.emailTo, buffer, html);
-            res.send('Quotation sent to email successfully!');
-        } else {
-            // Send PDF for printing
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', 'attachment; filename=quotation.pdf');
-            res.send(buffer);
-        }
-    });
+        // Read the template file
+        const template = fs.readFileSync(path.join(__dirname, 'templates/index.html'), 'utf8');
+        
+        // Create table rows for parts
+        const partsRows = quotationData.parts.map(part => `
+            <tr>
+                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.partNo}</td>
+                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.qty}</td>
+                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.dc}</td>
+                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.leadTime}</td>
+                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.condition}</td>
+                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.currency} ${part.pricePerUnit}</td>
+                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.currency} ${part.otherCharges}</td>
+            </tr>
+        `).join('');
+        
+        // Replace placeholders with actual data
+        let html = template
+            .replace('[Number]', quotationData.quotationNo)
+            .replace('[Date]', quotationData.date)
+            .replace('<!-- Parts rows will be inserted here -->', partsRows);
+        
+        // Generate PDF
+        const options = {
+            format: 'A4',
+            border: {
+                top: "0.5in",
+                right: "0.5in",
+                bottom: "0.5in",
+                left: "0.5in"
+            }
+        };
+        
+        pdf.create(html, options).toBuffer(async (err, buffer) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Error generating PDF' });
+            }
+            
+            if (req.body.action === 'email') {
+                try {
+                    // Send email with PDF attachment
+                    await sendEmail(quotationData.clientName, quotationData.emailTo, buffer, html);
+                    res.json({ success: true, message: 'Quotation sent to email successfully!' });
+                } catch (error) {
+                    console.error(error);
+                    res.status(500).json({ error: 'Error sending email' });
+                }
+            } else {
+                // Send PDF for printing
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', 'attachment; filename=quotation.pdf');
+                res.send(buffer);
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 // Email sending function
@@ -125,9 +135,9 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent) {
     });
 
     const mailOptions = {
-        from: 'rohitsharmatech@gmail.com',
+        from: 'quotation@make-tronics.com',
         to: toEmail,
-        cc: 'dev-rohit@make-tronics.com',
+        cc: 'sales@make-tronics.com',
         subject: `Quotation from Maketronics for ${clientName}`,
         html: htmlContent,
         attachments: [{

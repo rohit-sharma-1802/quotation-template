@@ -177,6 +177,39 @@
                 flex-direction: column;
             }
         }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #003399;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            margin-top: 10px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -265,6 +298,13 @@
         </div>
     </div>
 
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Processing...</div>
+        </div>
+    </div>
+
     <script>
         // Template for part item
         const partTemplate = `
@@ -345,6 +385,14 @@
             document.getElementById('emailDialog').style.display = 'none';
         }
 
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
         function sendEmail() {
             const emailTo = document.getElementById('emailTo').value;
             if (!emailTo) {
@@ -352,36 +400,10 @@
                 return;
             }
 
-            // Collect form data
-            const formData = {
-                quotationNo: document.getElementById('quotationNo').value,
-                date: document.getElementById('date').value,
-                validFor: document.getElementById('validFor').value,
-                clientName: document.getElementById('clientName').value,
-                clientCompany: document.getElementById('clientCompany').value,
-                preparedByName: document.getElementById('preparedByName').value,
-                preparedByCompany: document.getElementById('preparedByCompany').value,
-                parts: [],
-                action: 'email',
-                emailTo: emailTo,
-                emailCc: 'raj774285@gmail.com'
-            };
-
-            // Collect parts data
-            const partItems = document.querySelectorAll('.part-item');
-            partItems.forEach(item => {
-                const part = {
-                    partNo: item.querySelector('[name="partNo"]').value,
-                    qty: item.querySelector('[name="qty"]').value,
-                    dc: item.querySelector('[name="dc"]').value,
-                    leadTime: item.querySelector('[name="leadTime"]').value,
-                    condition: item.querySelector('[name="condition"]').value,
-                    currency: item.querySelector('[name="currency"]').value,
-                    pricePerUnit: item.querySelector('[name="pricePerUnit"]').value,
-                    otherCharges: item.querySelector('[name="otherCharges"]').value
-                };
-                formData.parts.push(part);
-            });
+            showLoading();
+            
+            // Add email to current form data
+            currentFormData.emailTo = emailTo;
 
             // Send to server
             fetch('/generate-invoice', {
@@ -389,16 +411,21 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(currentFormData)
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(data => {
-                alert(data);
+                hideLoading();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                alert(data.message);
                 closeEmailDialog();
             })
             .catch(error => {
+                hideLoading();
                 console.error('Error:', error);
-                alert('An error occurred while sending the email');
+                alert('An error occurred while sending the email: ' + error.message);
             });
         }
 
@@ -440,6 +467,7 @@
                 currentFormData = formData;
                 showEmailDialog();
             } else {
+                showLoading();
                 // Existing print logic
                 fetch('/generate-invoice', {
                     method: 'POST',
@@ -450,6 +478,7 @@
                 })
                 .then(response => response.blob())
                 .then(data => {
+                    hideLoading();
                     const blob = new Blob([data], { type: 'application/pdf' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -461,6 +490,7 @@
                     document.body.removeChild(a);
                 })
                 .catch(error => {
+                    hideLoading();
                     console.error('Error:', error);
                     alert('An error occurred while generating the quotation');
                 });
