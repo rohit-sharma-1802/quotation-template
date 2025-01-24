@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Maketronics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add Google Sign-In API -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Add LinkedIn Sign-In API -->
+    <script src="//platform.linkedin.com/in.js">
+        api_key: YOUR_LINKEDIN_API_KEY   // Replace with your LinkedIn API key
+        authorize: true
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: #f6f6f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header img {
+            width: 150px;
+            margin-bottom: 1rem;
+        }
+
+        .login-header h1 {
+            color: #003399;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #003399;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #004aad;
+        }
+
+        .form-group .error {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4A4A4A;
+        }
+
+        .forgot-password {
+            color: #004aad;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #003399;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-button:hover {
+            background-color: #004aad;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #4A4A4A;
+        }
+
+        .signup-link a {
+            color: #004aad;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error.visible {
+            display: block;
+        }
+
+        input.error-field {
+            border-color: #dc3545;
+        }
+
+        .social-login {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .social-login-button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #e1e1e1;
+            border-radius: 5px;
+            background-color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .google-login {
+            color: #757575;
+        }
+
+        .linkedin-login {
+            color: #0077b5;
+        }
+
+        .social-login-button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .social-login-button img {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="assets/maketronics_logo.png" alt="Maketronics Logo">
+            <h1>Welcome Back</h1>
+        </div>
+        <form id="loginForm" onsubmit="return validateForm(event)">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email">
+                <div class="error" id="emailError">Please enter a valid email address</div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password">
+                <div class="error" id="passwordError">Password must be at least 6 characters</div>
+            </div>
+            <div class="remember-forgot">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember">
+                    Remember me
+                </label>
+                <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+            <button type="submit" class="login-button">Log In</button>
+            <div class="signup-link">
+                Don't have an account? <a href="#">Sign up</a>
+            </div>
+        </form>
+        
+        <div class="social-login">
+            <div id="g_id_onload"
+                data-client_id="YOUR_GOOGLE_CLIENT_ID"    // Replace with your Google Client ID
+                data-callback="handleGoogleSignIn">
+            </div>
+            <button class="social-login-button google-login" id="googleLogin">
+                <img src="assets/google-icon.png" alt="Google Icon">
+                Sign in with Google
+            </button>
+            
+            <button class="social-login-button linkedin-login" onclick="handleLinkedInSignIn()">
+                <img src="assets/linkedin-icon.png" alt="LinkedIn Icon">
+                Sign in with LinkedIn
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function validateForm(event) {
+            event.preventDefault();
+            let isValid = true;
+            
+            // Email validation
+            const email = document.getElementById('email');
+            const emailError = document.getElementById('emailError');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(email.value)) {
+                email.classList.add('error-field');
+                emailError.classList.add('visible');
+                isValid = false;
+            } else {
+                email.classList.remove('error-field');
+                emailError.classList.remove('visible');
+            }
+
+            // Password validation
+            const password = document.getElementById('password');
+            const passwordError = document.getElementById('passwordError');
+            
+            if (password.value.length < 6) {
+                password.classList.add('error-field');
+                passwordError.classList.add('visible');
+                isValid = false;
+            } else {
+                password.classList.remove('error-field');
+                passwordError.classList.remove('visible');
+            }
+
+            if (isValid) {
+                // Form is valid, you can submit it here
+                console.log('Form submitted successfully');
+                // Add your form submission logic here
+            }
+
+            return isValid;
+        }
+
+        // Real-time validation
+        document.getElementById('email').addEventListener('input', function() {
+            const emailError = document.getElementById('emailError');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(this.value)) {
+                this.classList.add('error-field');
+                emailError.classList.add('visible');
+            } else {
+                this.classList.remove('error-field');
+                emailError.classList.remove('visible');
+            }
+        });
+
+        document.getElementById('password').addEventListener('input', function() {
+            const passwordError = document.getElementById('passwordError');
+            
+            if (this.value.length < 6) {
+                this.classList.add('error-field');
+                passwordError.classList.add('visible');
+            } else {
+                this.classList.remove('error-field');
+                passwordError.classList.remove('visible');
+            }
+        });
+
+        // Google Sign-In Handler
+        function handleGoogleSignIn(response) {
+            const credential = response.credential;
+            const decodedToken = JSON.parse(atob(credential.split('.')[1]));
+            
+            console.log('Google Sign-In successful:', decodedToken);
+            // Add your logic here to handle the Google sign-in
+            // Usually involves sending the token to your backend
+            
+            // Example:
+            // sendToBackend({
+            //     type: 'google',
+            //     token: credential,
+            //     email: decodedToken.email,
+            //     name: decodedToken.name
+            // });
+        }
+
+        // LinkedIn Sign-In Handler
+        function handleLinkedInSignIn() {
+            IN.User.authorize(function() {
+                IN.API.Profile("me")
+                    .fields("id", "first-name", "last-name", "email-address")
+                    .result(function(data) {
+                        console.log('LinkedIn Sign-In successful:', data);
+                        // Add your logic here to handle the LinkedIn sign-in
+                        // Usually involves sending the data to your backend
+                        
+                        // Example:
+                        // sendToBackend({
+                        //     type: 'linkedin',
+                        //     profile: data.values[0],
+                        //     email: data.values[0].emailAddress
+                        // });
+                    })
+                    .error(function(error) {
+                        console.error('LinkedIn Sign-In failed:', error);
+                    });
+            });
+        }
+
+        // Example backend communication function
+        async function sendToBackend(authData) {
+            try {
+                const response = await fetch('/api/auth/social', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(authData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Handle successful authentication
+                    window.location.href = '/dashboard'; // Redirect to dashboard
+                } else {
+                    throw new Error('Authentication failed');
+                }
+            } catch (error) {
+                console.error('Authentication error:', error);
+                // Handle error (show message to user, etc.)
+            }
+        }
+    </script>
+</body>
+</html> 
