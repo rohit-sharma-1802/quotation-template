@@ -17,7 +17,8 @@
     "nodemailer": "^6.7.0",
     "html-pdf": "^3.0.1",
     "dotenv": "^10.0.0",
-    "body-parser": "^1.19.0"
+    "body-parser": "^1.19.0",
+    "fs": "0.0.1-security"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"

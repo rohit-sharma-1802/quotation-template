@@ -6,6 +6,7 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const pdf = require('html-pdf');
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,6 +20,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }));
+app.use('/assets', express.static(path.join(__dirname, 'templates/assets')));
 
 // View engine setup
 app.set('view engine', 'hbs');
@@ -47,23 +49,53 @@ app.post('/login', (req, res) => {
     const { email, password } = req.body;
     if (email === 'manage@make-tronics.com' && password === 'admin112') {
         req.session.authenticated = true;
-        res.redirect('/invoice-form');
+        res.redirect('/create-quotation');
     } else {
         res.render('login', { error: 'Invalid credentials' });
     }
 });
 
-app.get('/invoice-form', authenticateUser, (req, res) => {
-    res.render('invoice-form');
+app.get('/create-quotation', authenticateUser, (req, res) => {
+    res.sendFile(path.join(__dirname, 'templates/create-quotation.html'));
 });
 
 app.post('/generate-invoice', authenticateUser, async (req, res) => {
-    const invoiceData = req.body;
+    const quotationData = req.body;
+    
+    // Read the template file
+    const template = fs.readFileSync(path.join(__dirname, 'templates/index.html'), 'utf8');
+    
+    // Create table rows for parts
+    const partsRows = quotationData.parts.map(part => `
+        <tr>
+            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.partNo}</td>
+            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.qty}</td>
+            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.dc}</td>
+            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.leadTime}</td>
+            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.condition}</td>
+            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.currency} ${part.pricePerUnit}</td>
+            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.currency} ${part.otherCharges}</td>
+        </tr>
+    `).join('');
+    
+    // Replace placeholders with actual data
+    let html = template
+        .replace('[Number]', quotationData.quotationNo)
+        .replace('[Date]', quotationData.date)
+        .replace('<!-- Parts rows will be inserted here -->', partsRows);
     
     // Generate PDF
-    const html = await generateInvoiceHTML(invoiceData);
+    const options = {
+        format: 'A4',
+        border: {
+            top: "0.5in",
+            right: "0.5in",
+            bottom: "0.5in",
+            left: "0.5in"
+        }
+    };
     
-    pdf.create(html).toBuffer((err, buffer) => {
+    pdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Error generating PDF');
@@ -71,19 +103,19 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
         
         if (req.body.action === 'email') {
             // Send email with PDF attachment
-            sendEmail(invoiceData.email, buffer, html);
-            res.send('Invoice sent to email successfully!');
+            sendEmail(quotationData.clientName, quotationData.emailTo, buffer, html);
+            res.send('Quotation sent to email successfully!');
         } else {
             // Send PDF for printing
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', 'attachment; filename=invoice.pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=quotation.pdf');
             res.send(buffer);
         }
     });
 });
 
 // Email sending function
-async function sendEmail(toEmail, pdfBuffer, htmlContent) {
+async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent) {
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -95,29 +127,16 @@ async function sendEmail(toEmail, pdfBuffer, htmlContent) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: toEmail,
-        subject: 'Invoice',
+        cc: 'raj774285@gmail.com',
+        subject: `Quotation from Maketronics for ${clientName}`,
         html: htmlContent,
         attachments: [{
-            filename: 'invoice.pdf',
+            filename: 'quotation.pdf',
             content: pdfBuffer
         }]
     };
 
     await transporter.sendMail(mailOptions);
-}
-
-// Generate invoice HTML
-function generateInvoiceHTML(data) {
-    // You'll need to implement this function to generate HTML for the invoice
-    // using the data from the form
-    return `
-        <html>
-            <body>
-                <h1>Invoice</h1>
-                <!-- Add your invoice template here -->
-            </body>
-        </html>
-    `;
 }
 
 app.listen(port, () => {
