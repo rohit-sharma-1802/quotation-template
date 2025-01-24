@@ -125,9 +125,8 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent) {
     });
 
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: 'sales@make-tronics.com',
         to: toEmail,
-        cc: 'raj774285@gmail.com',
         subject: `Quotation from Maketronics for ${clientName}`,
         html: htmlContent,
         attachments: [{
