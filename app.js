@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const pdf = require('html-pdf');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const mongoose = require('mongoose');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -36,6 +37,36 @@ const authenticateUser = (req, res, next) => {
     }
 };
 
+// Add MongoDB connection
+mongoose.connect(process.env.MONGODB_URI).then(() => {
+    console.log('Connected to MongoDB');
+}).catch(err => {
+    console.error('MongoDB connection error:', err);
+});
+
+// Add Quotation Schema
+const quotationSchema = new mongoose.Schema({
+    quotationNo: String,
+    date: String,
+    clientName: String,
+    clientCompany: String,
+    emailTo: String,
+    parts: [{
+        partNo: String,
+        qty: String,
+        dc: String,
+        leadTime: String,
+        condition: String,
+        currency: String,
+        pricePerUnit: String,
+        otherCharges: String
+    }],
+    type: String, // 'email' or 'print'
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Quotation = mongoose.model('Quotation', quotationSchema);
+
 // Routes
 app.get('/', (req, res) => {
     res.redirect('/login');
@@ -63,6 +94,13 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
     try {
         const quotationData = req.body;
         
+        // Save quotation to database
+        const quotation = new Quotation({
+            ...quotationData,
+            type: quotationData.action
+        });
+        await quotation.save();
+
         // Read the template file
         const template = fs.readFileSync(path.join(__dirname, 'templates/index.html'), 'utf8');
         
@@ -83,6 +121,9 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
         let html = template
             .replace('[Number]', quotationData.quotationNo)
             .replace('[Date]', quotationData.date)
+            .replace('[ClientName]', quotationData.clientName)
+            .replace('[CompanyName]', quotationData.clientCompany)
+            .replace('[PreparedByName]', quotationData.preparedByName)
             .replace('<!-- Parts rows will be inserted here -->', partsRows);
         
         // Generate PDF
@@ -104,7 +145,6 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
             
             if (req.body.action === 'email') {
                 try {
-                    // Send email with PDF attachment
                     await sendEmail(quotationData.clientName, quotationData.emailTo, buffer, html);
                     res.json({ success: true, message: 'Quotation sent to email successfully!' });
                 } catch (error) {
@@ -112,7 +152,6 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
                     res.status(500).json({ error: 'Error sending email' });
                 }
             } else {
-                // Send PDF for printing
                 res.setHeader('Content-Type', 'application/pdf');
                 res.setHeader('Content-Disposition', 'attachment; filename=quotation.pdf');
                 res.send(buffer);
@@ -148,6 +187,17 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent) {
 
     await transporter.sendMail(mailOptions);
 }
+
+// Add new route to view quotation history
+app.get('/quotation-history', authenticateUser, async (req, res) => {
+    try {
+        const quotations = await Quotation.find().sort({ createdAt: -1 });
+        res.render('quotation-history', { quotations });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching quotation history' });
+    }
+});
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

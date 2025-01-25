@@ -70,9 +70,9 @@
                                                         <p style="margin: 0; color: #003399; font-weight: 600; font-size: 10px; font-family: 'Montserrat', sans-serif; line-height: 1.4;">long lead-time components</p>
                                                     </td>
                                                     <td width="50%" style="text-align: left; color: #004aad; font-weight: 600; padding-left: 90px; vertical-align: top;">
-                                                        <p style="margin: 0; font-size: 10px; line-height: 1.0;">Quotation Number: [Number]</p>
-                                                        <p style="margin: 5px 0; font-size: 10px; line-height: 1.0;">Date: [Date]</p>
-                                                        <p style="margin: 0; font-size: 10px; line-height: 1.0;">Valid for: 5 days</p>
+                                                        <p style="margin: 0; font-size: 10px; line-height: 1.0;" data-field="quotationNo">Quotation Number: [Number]</p>
+                                                        <p style="margin: 5px 0; font-size: 10px; line-height: 1.0;" data-field="date">Date: [Date]</p>
+                                                        <p style="margin: 0; font-size: 10px; line-height: 1.0;" data-field="validFor" >Valid for: 5 days</p>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -95,13 +95,13 @@
                                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td width="50%" style="padding: 10px;">
-                                            <p style="margin: 0; font-weight: 600; font-size: 12px; color: #003399;">Prepared for:</p>
-                                            <p style="margin: 8px 0; font-size: 12px; color: #004aad; line-height: 0.6;">Name</p>
-                                            <p style="margin: 0; font-size: 12px; color: #004aad; line-height: 0.6;">Company's Name</p>
+                                            <p style="margin: 0; font-weight: 600; font-size: 12px; color: #003399;" >Prepared for:</p>
+                                            <p style="margin: 8px 0; font-size: 12px; color: #004aad; line-height: 0.6;" data-field="clientName">Name</p>
+                                            <p style="margin: 0; font-size: 12px; color: #004aad; line-height: 0.6;" data-field="clientCompany">Company's Name</p>
                                         </td>
                                         <td width="50%" style="padding: 10px;">
                                             <p style="margin: 0; font-weight: 600; font-size: 12px; color: #003399;">Prepared By:</p>
-                                            <p style="margin: 8px 0; font-size: 12px; color: #004aad; line-height: 0.6;">Name</p>
+                                            <p style="margin: 8px 0; font-size: 12px; color: #004aad; line-height: 0.6;" data-field="preparedByName">Name</p>
                                             <p style="margin: 0; font-size: 12px; color: #004aad; line-height: 1.1;">Maketronics Communications LLC-FZ</p>
                                         </td>
                                     </tr>
@@ -230,6 +230,7 @@
     <script>
         window.onload = function() {
             const quotationData = JSON.parse(localStorage.getItem('quotationData'));
+            console.log(quotationData);
             if (quotationData) {
                 // Fill quotation details
                 document.querySelector('[data-field="quotationNo"]').textContent = quotationData.quotationNo;

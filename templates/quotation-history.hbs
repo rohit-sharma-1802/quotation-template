@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quotation History</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quotation History</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Quotation No</th>
+                <th>Date</th>
+                <th>Client Name</th>
+                <th>Email</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each quotations}}
+            <tr>
+                <td>{{this.quotationNo}}</td>
+                <td>{{this.date}}</td>
+                <td>{{this.clientName}}</td>
+                <td>{{this.emailTo}}</td>
+                <td>{{this.type}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</body>
+</html> 
