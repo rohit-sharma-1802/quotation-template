@@ -1,45 +1,249 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Quotation History</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation History - Maketronics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        table {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: #f6f6f6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #003399;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .quotation-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 1rem;
         }
-        th, td {
-            padding: 8px;
-            border: 1px solid #ddd;
+
+        .quotation-table th,
+        .quotation-table td {
+            padding: 12px;
+            border: 1px solid #e1e1e1;
             text-align: left;
         }
-        th {
-            background-color: #f4f4f4;
+
+        .quotation-table th {
+            background-color: #f8f9fa;
+            color: #003399;
+            font-weight: 600;
+        }
+
+        .quotation-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-view {
+            background-color: #003399;
+            color: white;
+        }
+
+        .btn-print {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+
+        .form-group input[readonly] {
+            background-color: #f8f9fa;
+        }
+
+        .additional-details {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .additional-details ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .additional-details li {
+            margin-bottom: 15px;
+        }
+
+        .additional-details label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #003399;
+        }
+
+        .additional-details textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .quotation-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
     </style>
 </head>
 <body>
-    <h1>Quotation History</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Quotation No</th>
-                <th>Date</th>
-                <th>Client Name</th>
-                <th>Email</th>
-                <th>Type</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each quotations}}
-            <tr>
-                <td>{{this.quotationNo}}</td>
-                <td>{{this.date}}</td>
-                <td>{{this.clientName}}</td>
-                <td>{{this.emailTo}}</td>
-                <td>{{this.type}}</td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
+    <div class="container">
+        <a href="/create-quotation" class="back-btn">← Back to Create Quotation</a>
+        <h1>Quotation History</h1>
+        <div class="quotation-header">
+            <div class="form-group">
+                <label>Quotation Number:</label>
+                <input type="text" id="quotationNumber" value="MK-{{currentYear}}-{{randomNumber}}" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>Date:</label>
+                <input type="date" id="quotationDate" value="{{currentDate}}">
+            </div>
+
+            <div class="form-group">
+                <label>Prepared By:</label>
+                <select id="preparedBy">
+                    <option value="Madhur Gandhi">Madhur Gandhi</option>
+                    <option value="Carl Hendarson">Carl Hendarson</option>
+                    <option value="Kaushik Iyyer">Kaushik Iyyer</option>
+                </select>
+            </div>
+        </div>
+        <table class="quotation-table">
+            <thead>
+                <tr>
+                    <th>Quotation No</th>
+                    <th>Date</th>
+                    <th>Client Name</th>
+                    <th>Company</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each quotations}}
+                <tr>
+                    <td>{{this.quotationNo}}</td>
+                    <td>{{this.date}}</td>
+                    <td>{{this.clientName}}</td>
+                    <td>{{this.clientCompany}}</td>
+                    <td>{{this.type}}</td>
+                    <td class="action-buttons">
+                        <a href="/quotation/{{this._id}}" class="btn btn-view">View Details</a>
+                        <a href="/quotation/{{this._id}}/print" class="btn btn-print">Print</a>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        <div class="additional-details">
+            <h4>Additional Information</h4>
+            <ul>
+                <li>
+                    <label>Lead Time:</label>
+                    <input type="text" id="leadTime" placeholder="Enter lead time">
+                </li>
+                <li>
+                    <label>Conditions:</label>
+                    <textarea id="conditions" rows="3" placeholder="Enter terms and conditions"></textarea>
+                </li>
+                <li>
+                    <label>Other Charges:</label>
+                    <input type="text" id="otherCharges" placeholder="Enter other charges if any">
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        function generateRandomNumber() {
+            return Math.floor(1000 + Math.random() * 9000).toString().padStart(4, '0');
+        }
+        
+        function setCurrentDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('quotationDate').value = today;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date
+            setCurrentDate();
+            
+            // Set random quotation number
+            const currentYear = new Date().getFullYear();
+            const randomNum = generateRandomNumber();
+            document.getElementById('quotationNumber').value = `MK-${currentYear}-${randomNum}`;
+            
+            // Add event listener for date changes
+            document.getElementById('quotationDate').addEventListener('change', function(e) {
+                // You can add validation here if needed
+                const selectedDate = new Date(e.target.value);
+                const today = new Date();
+                if (selectedDate > today) {
+                    alert('Cannot select future date');
+                    setCurrentDate();
+                }
+            });
+        });
+    </script>
 </body>
 </html> 

@@ -1,0 +1,58 @@
+.quotation-header {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.additional-details {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.additional-details h4 {
+  margin-bottom: 15px;
+}
+
+.additional-details ul {
+  list-style: none;
+  padding: 0;
+}
+
+.additional-details li {
+  margin-bottom: 15px;
+}
+
+.additional-details label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.additional-details input,
+.additional-details textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+} 

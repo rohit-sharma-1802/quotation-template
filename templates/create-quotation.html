@@ -224,7 +224,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="quotationNo">Quotation Number</label>
-                        <input type="text" id="quotationNo" required>
+                        <input type="text" id="quotationNo" readonly>
                     </div>
                     <div class="form-group">
                         <label for="date">Date</label>
@@ -258,7 +258,11 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="preparedByName">Name</label>
-                        <input type="text" id="preparedByName" required>
+                        <select id="preparedByName" required>
+                            <option value="Madhur Gandhi">Madhur Gandhi</option>
+                            <option value="Carl Hendarson">Carl Hendarson</option>
+                            <option value="Kaushik Iyyer">Kaushik Iyyer</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="preparedByCompany">Company Name</label>
@@ -274,6 +278,22 @@
                     <!-- Parts will be added here -->
                 </div>
                 <button type="button" class="add-part-btn" onclick="addPart()">+ Add Part</button>
+            </div>
+
+            <!-- Move these fields below the parts table -->
+            <div class="form-section" style="margin-top: 20px;">
+                <h3 class="section-title">Additional Information</h3>
+                <ul style="list-style-type: disc; padding-left: 20px;">
+                    <li style="margin-bottom: 10px;">
+                        <strong>Lead Time:</strong> <span id="leadTimeText"></span>
+                    </li>
+                    <li style="margin-bottom: 10px;">
+                        <strong>Conditions:</strong> <span id="conditionsText"></span>
+                    </li>
+                    <li style="margin-bottom: 10px;">
+                        <strong>Other Charges:</strong> <span id="otherChargesText"></span>
+                    </li>
+                </ul>
             </div>
 
             <div class="button-group" style="display: flex; gap: 10px; justify-content: center;">
@@ -306,7 +326,26 @@
     </div>
 
     <script>
-        // Template for part item
+        // Add this at the beginning of your script section
+        function generateQuotationNumber() {
+            const year = new Date().getFullYear();
+            const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            return `MK-${year}-${random}`;
+        }
+
+        window.onload = function() {
+            // Set random quotation number
+            document.getElementById('quotationNo').value = generateQuotationNumber();
+            
+            // Set current date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            
+            // Add initial part
+            addPart();
+        }
+
+        // Update the part template to remove these fields from the table
         const partTemplate = `
             <div class="part-item">
                 <button type="button" class="remove-part" onclick="removePart(this)">×</button>
@@ -323,22 +362,12 @@
                         <label>DC</label>
                         <input type="text" name="dc" required>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Lead Time</label>
-                        <input type="text" name="leadTime" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Condition</label>
-                        <input type="text" name="condition" required>
-                    </div>
                     <div class="form-group">
                         <label>Currency</label>
                         <select name="currency" required>
-                            <option value="USD">USD</option>
-                            <option value="EUR">EUR</option>
-                            <option value="GBP">GBP</option>
+                            <option value="$">$</option>
+                            <option value="€">€</option>
+                            <option value="₹">₹</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -348,17 +377,41 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
+                        <label>Lead Time</label>
+                        <input type="text" name="leadTime" required onchange="updateAdditionalInfo()">
+                    </div>
+                    <div class="form-group">
+                        <label>Condition</label>
+                        <input type="text" name="condition" required onchange="updateAdditionalInfo()">
+                    </div>
+                    <div class="form-group">
                         <label>Other Charges</label>
-                        <input type="number" step="0.01" name="otherCharges" value="0">
+                        <input type="text"  name="otherCharges" onchange="updateAdditionalInfo()">
                     </div>
                 </div>
             </div>
         `;
 
-        // Add initial part
-        document.addEventListener('DOMContentLoaded', function() {
-            addPart();
-        });
+        function updateAdditionalInfo() {
+            const parts = document.querySelectorAll('.part-item');
+            let leadTimes = new Set();
+            let conditions = new Set();
+            let totalOtherCharges = new Set();
+
+            parts.forEach(part => {
+                const leadTime = part.querySelector('[name="leadTime"]').value;
+                const condition = part.querySelector('[name="condition"]').value;
+                const otherCharges = part.querySelector('[name="otherCharges"]').value;
+                
+                if (leadTime) leadTimes.add(leadTime);
+                if (condition) conditions.add(condition);
+                if (otherCharges) totalOtherCharges.add(otherCharges);
+            });
+
+            document.getElementById('leadTimeText').textContent = Array.from(leadTimes).join(', ');
+            document.getElementById('conditionsText').textContent = Array.from(conditions).join(', ');
+            document.getElementById('otherChargesText').textContent = Array.from(totalOtherCharges).join(', ');
+        }
 
         function addPart() {
             const container = document.getElementById('partsContainer');

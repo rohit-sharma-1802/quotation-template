@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Details - Maketronics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: #f6f6f6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #003399;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #e1e1e1;
+            border-radius: 5px;
+        }
+
+        .section-title {
+            color: #003399;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .detail-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #003399;
+        }
+
+        .parts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .parts-table th,
+        .parts-table td {
+            padding: 12px;
+            border: 1px solid #e1e1e1;
+            text-align: left;
+        }
+
+        .parts-table th {
+            background-color: #f8f9fa;
+            color: #003399;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .btn-print {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <a href="/quotation-history" class="back-btn">← Back to History</a>
+            <a href="/quotation/{{quotation._id}}/print" class="btn-print">Print Quotation</a>
+        </div>
+        <h1>Quotation Details</h1>
+
+        <div class="detail-section">
+            <h2 class="section-title">Quotation Information</h2>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Quotation Number:</span>
+                    <span>{{quotation.quotationNo}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Date:</span>
+                    <span>{{quotation.date}}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h2 class="section-title">Client Information</h2>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Client Name:</span>
+                    <span>{{quotation.clientName}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Company:</span>
+                    <span>{{quotation.clientCompany}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Email:</span>
+                    <span>{{quotation.emailTo}}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-section">
+            <h2 class="section-title">Parts Information</h2>
+            <table class="parts-table">
+                <thead>
+                    <tr>
+                        <th>Part #</th>
+                        <th>Qty</th>
+                        <th>DC</th>
+                        <th>Lead Time</th>
+                        <th>Condition</th>
+                        <th>Price per Unit</th>
+                        <th>Other Charges</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each quotation.parts}}
+                    <tr>
+                        <td>{{this.partNo}}</td>
+                        <td>{{this.qty}}</td>
+                        <td>{{this.dc}}</td>
+                        <td>{{this.leadTime}}</td>
+                        <td>{{this.condition}}</td>
+                        <td>{{this.currency}} {{this.pricePerUnit}}</td>
+                        <td>{{this.currency}} {{this.otherCharges}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html> 

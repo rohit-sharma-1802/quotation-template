@@ -114,16 +114,29 @@
                             <td style="padding: 15px;">
                                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                                     <tr style="background-color: #f8f9fa;">
-                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600;">Part #</th>
-                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600;">Qty</th>
-                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600;">DC</th>
-                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600;">Lead Time</th>
-                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600;">Condition</th>
-                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600;">Price per unit</th>
-                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600;">Other Charges</th>
+                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600; text-align: center;">Part #</th>
+                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600; text-align: center;">Qty</th>
+                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600; text-align: center;">DC</th>
+                                        <th style="padding: 12px; border: 1px solid #003399; color: #003399; font-size: 13px; font-weight: 600; text-align: center;">Price per unit</th>
                                     </tr>
                                     <!-- Parts rows will be inserted here -->
                                 </table>
+                                
+                                <!-- Additional Information -->
+                                <div style="margin-top: 20px;">
+                                    <h3 style="color: #003399; font-size: 14px; margin-bottom: 10px;">Additional Information</h3>
+                                    <ul style="list-style-type: disc; padding-left: 20px; margin: 0;">
+                                        <li style="margin-bottom: 8px; color: #4A4A4A; font-size: 12px;">
+                                            <strong>Lead Time:</strong> <span id="leadTimeText"></span>
+                                        </li>
+                                        <li style="margin-bottom: 8px; color: #4A4A4A; font-size: 12px;">
+                                            <strong>Conditions:</strong> <span id="conditionsText"></span>
+                                        </li>
+                                        <li style="margin-bottom: 8px; color: #4A4A4A; font-size: 12px;">
+                                            <strong>Other Charges:</strong> <span id="otherChargesText"></span>
+                                        </li>
+                                    </ul>
+                                </div>
                             </td>
                         </tr>
     
@@ -249,13 +262,10 @@
                 if (quotationData.parts && quotationData.parts.length > 0) {
                     tableBody.innerHTML = quotationData.parts.map(part => `
                         <tr>
-                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.partNo}</td>
-                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.qty}</td>
-                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.dc}</td>
-                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.leadTime}</td>
-                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.condition}</td>
-                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.currency} ${part.pricePerUnit}</td>
-                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A;">${part.currency} ${part.otherCharges}</td>
+                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A; text-align: center;">${part.partNo}</td>
+                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A; text-align: center;">${part.qty}</td>
+                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A; text-align: center;">${part.dc}</td>
+                            <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #4A4A4A; text-align: center;">${part.currency} ${part.pricePerUnit}</td>
                         </tr>
                     `).join('');
                 }
