@@ -151,7 +151,7 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
         
         if (req.body.action === 'email') {
             try {
-                await sendEmail(quotationData.clientName, quotationData.emailTo, null, html);
+                await sendEmail(quotationData.clientName, quotationData.emailTo, null, html, quotationData.parts);
                 res.json({ success: true, message: 'Quotation sent to email successfully!' });
             } catch (error) {
                 console.error(error);
@@ -186,8 +186,8 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
     }
 });
 
-// Email sending function
-async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent) {
+// Updated email sending function
+async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
@@ -198,12 +198,17 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent) {
         }
     });
 
+    let subject = `Quotation from Maketronics for ${clientName}`;
+    if (parts && parts.length === 1) {
+        subject = `Quotation from Maketronics for | ${parts[0].partNo} | ${clientName}`;
+    }
+
     const mailOptions = {
         from: 'sales@make-tronics.com',
         to: toEmail,
         cc: 'sales@make-tronics.com',
-        subject: `Quotation from Maketronics for ${clientName}`,
-        html: htmlContent // Just send the HTML content
+        subject: subject,
+        html: htmlContent
     };
 
     await transporter.sendMail(mailOptions);
