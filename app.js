@@ -131,14 +131,14 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
         // Add additional information section
         const additionalInfo = `
             <tr>
-                <td style="padding: 10px;">
+                <td style="padding: 0 10px;">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                         <tr>
                             <td>
                                 <ul style="list-style-type: disc; padding-left: 20px; margin: -3px 0;">
-                                    <li style="margin-bottom: 10px; color: #004aad; font-size:10px;"><strong>Lead Time:</strong> ${quotationData.parts.map(p => p.leadTime).join(', ')}</li>
-                                    <li style="margin-bottom: 10px; color: #004aad; font-size:10px;"><strong>Conditions:</strong> ${quotationData.parts.map(p => p.condition).join(', ')}</li>
-                                    <li style="margin-bottom: 10px; color: #004aad; font-size:10px;"><strong>Other Charges:</strong> ${quotationData.parts.reduce((sum, p) => sum + parseFloat(p.otherCharges || 0), 0).toFixed(2)}</li>
+                                    <li style=" color: #004aad; font-size:10px;"><strong>Lead Time:</strong> ${quotationData.parts.map(p => p.leadTime).join(', ')}</li>
+                                    <li style="color: #004aad; font-size:10px;"><strong>Conditions:</strong> ${quotationData.parts.map(p => p.condition).join(', ')}</li>
+                                    <li style="color: #004aad; font-size:10px;"><strong>Other Charges:</strong> ${quotationData.parts.map(p => p.otherCharges).join(', ')}</li>
                                 </ul>
                             </td>
                         </tr>
