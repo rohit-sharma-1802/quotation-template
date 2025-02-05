@@ -201,7 +201,7 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent) {
     const mailOptions = {
         from: 'sales@make-tronics.com',
         to: toEmail,
-        cc: ['sales@make-tronics.com', 'madhur@make-tronics.com', 'kaushik@make-tronics.com'],
+        cc: 'sales@make-tronics.com',
         subject: `Quotation from Maketronics for ${clientName}`,
         html: htmlContent // Just send the HTML content
     };
