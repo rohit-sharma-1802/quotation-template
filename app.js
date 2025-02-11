@@ -198,9 +198,9 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
         }
     });
 
-    let subject = `Quotation from Maketronics for ${clientName}`;
+    let subject = `Quotation from Maketronics | ${clientName}`;
     if (parts && parts.length === 1) {
-        subject = `Quotation from Maketronics for | ${parts[0].partNo} | ${clientName}`;
+        subject = `Quotation from Maketronics | ${parts[0].partNo} | ${clientName}`;
     }
 
     const mailOptions = {
