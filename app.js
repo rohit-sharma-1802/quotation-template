@@ -19,7 +19,11 @@ app.use(bodyParser.json());
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // true in production, false in development
+        maxAge: 3600000 // 1 hour in milliseconds
+    }
 }));
 app.use('/assets', express.static(path.join(__dirname, 'templates/assets')));
 
