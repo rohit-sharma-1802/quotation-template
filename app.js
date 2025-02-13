@@ -21,7 +21,6 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // true in production, false in development
         maxAge: 3600000 // 1 hour in milliseconds
     }
 }));
