@@ -115,10 +115,10 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
         // Create table rows for parts
         const partsRows = quotationData.parts.map(part => `
             <tr>
-                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #004aad; text-align: center;">${part.partNo}</td>
-                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #004aad;" text-align: center;>${part.qty}</td>
-                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #004aad;" text-align: center;>${part.dc}</td>
-                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #004aad;" text-align: center;>${part.currency} ${part.pricePerUnit}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.partNo}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff;" text-align: center;>${part.qty}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff;" text-align: center;>${part.dc}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff;" text-align: center;>${part.currency} ${part.pricePerUnit}</td>
             </tr>
         `).join('');
         
@@ -139,9 +139,9 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
                         <tr>
                             <td>
                                 <ul style="list-style-type: disc; padding-left: 20px; margin: -3px 0;">
-                                    <li style=" color: #004aad; font-size:10px;"><strong>Lead Time:</strong> ${quotationData.parts.map(p => p.leadTime).join(', ')}</li>
-                                    <li style="color: #004aad; font-size:10px;"><strong>Conditions:</strong> ${quotationData.parts.map(p => p.condition).join(', ')}</li>
-                                    <li style="color: #004aad; font-size:10px;"><strong>Other Charges:</strong> ${quotationData.parts.map(p => p.otherCharges).join(', ')}</li>
+                                    <li style=" color: #0300ff; font-size:10px;"><strong>Lead Time:</strong> ${quotationData.parts.map(p => p.leadTime).join(', ')}</li>
+                                    <li style="color: #0300ff; font-size:10px;"><strong>Conditions:</strong> ${quotationData.parts.map(p => p.condition).join(', ')}</li>
+                                    <li style="color: #0300ff; font-size:10px;"><strong>Other Charges:</strong> ${quotationData.parts.map(p => p.otherCharges).join(', ')}</li>
                                 </ul>
                             </td>
                         </tr>
@@ -256,10 +256,10 @@ app.get('/quotation/:id/print', authenticateUser, async (req, res) => {
         // Create table rows for parts
         const partsRows = quotation.parts.map(part => `
             <tr>
-                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #004aad; text-align: center;">${part.partNo}</td>
-                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #004aad; text-align: center;">${part.qty}</td>
-                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #004aad; text-align: center;">${part.dc}</td>
-                <td style="padding: 12px; border: 1px solid #003399; font-size: 13px; color: #004aad; text-align: center;">${part.currency} ${part.pricePerUnit}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.partNo}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.qty}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.dc}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.currency} ${part.pricePerUnit}</td>
             </tr>
         `).join('');
         
