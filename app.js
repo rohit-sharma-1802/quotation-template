@@ -136,15 +136,18 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
             <tr>
                 <td style="padding: 0 10px;">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                        ${quotationData.parts.map(part => `
                         <tr>
                             <td>
+                                <p style="color: #0300ff; font-size:12px; margin: 5px 0;"><strong>Part Number: ${part.partNo}</strong></p>
                                 <ul style="list-style-type: disc; padding-left: 20px; margin: -3px 0;">
-                                    <li style=" color: #0300ff; font-size:10px;"><strong>Lead Time:</strong> ${quotationData.parts.map(p => p.leadTime).join(', ')}</li>
-                                    <li style="color: #0300ff; font-size:10px;"><strong>Conditions:</strong> ${quotationData.parts.map(p => p.condition).join(', ')}</li>
-                                    <li style="color: #0300ff; font-size:10px;"><strong>Other Charges:</strong> ${quotationData.parts.map(p => p.otherCharges).join(', ')}</li>
+                                    <li style="color: #0300ff; font-size:10px;"><strong>Lead Time:</strong> ${part.leadTime}</li>
+                                    <li style="color: #0300ff; font-size:10px;"><strong>Conditions:</strong> ${part.condition}</li>
+                                    <li style="color: #0300ff; font-size:10px;"><strong>Other Charges:</strong> ${part.otherCharges}</li>
                                 </ul>
                             </td>
                         </tr>
+                        `).join('')}
                     </table>
                 </td>
             </tr>
