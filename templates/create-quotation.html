@@ -127,7 +127,6 @@
             cursor: pointer;
             font-weight: 600;
             width: 200px;
-            margin-top: 1rem;
         }
 
         .submit-btn:hover {
@@ -299,6 +298,7 @@
             <div class="button-group" style="display: flex; gap: 10px; justify-content: center;">
                 <button type="submit" class="submit-btn" name="action" value="print">Print Quotation</button>
                 <button type="submit" class="submit-btn" name="action" value="email">Send Email</button>
+                            <button type="submit" class="submit-btn" name="action" value="schedule" style="background-color: #28a745;">Schedule Email</button>
             </div>
         </form>
     </div>
@@ -314,6 +314,70 @@
             <div class="dialog-buttons">
                 <button type="button" class="submit-btn" style="background-color: #6c757d" onclick="closeEmailDialog()">Cancel</button>
                 <button type="button" class="submit-btn" onclick="sendEmail()">Send</button>
+            </div>
+        </div>
+    </div>
+    <!-- Schedule Email Dialog -->
+    <div class="email-dialog-overlay" id="scheduleDialog">
+        <div class="email-dialog">
+            <h3>Schedule Quotation Email</h3>
+            <div class="form-group">
+                <label>To:</label>
+                <input type="email" id="scheduleEmailTo" required>
+            </div>
+            <div class="form-group">
+                <label>Schedule Date & Time:</label>
+                <input type="datetime-local" id="scheduleDateTime" required>
+            </div>
+            <div class="dialog-buttons">
+                <button type="button" class="submit-btn" style="background-color: #6c757d" onclick="closeScheduleDialog()">Cancel</button>
+                <button type="button" class="submit-btn" style="background-color: #28a745;" onclick="scheduleEmail()">Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculator Modal -->
+    <div class="email-dialog-overlay" id="calculatorModal">
+        <div class="email-dialog" style="max-width: 420px;">
+            <h3>Price Calculator</h3>
+            <div class="row">
+                <div class="form-group col-6">
+                    <label>Cost Price (per unit)</label>
+                    <input type="number" id="calcCostPrice" step="0.01">
+                </div>
+                <div class="form-group col-6">
+                    <label>Quantity</label>
+                    <input type="number" id="calcQuantity" step="1">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-6">
+                    <label>Total Cost</label>
+                    <input type="text" id="calcTotalCost" readonly>
+                </div>
+                <div class="form-group col-6">
+                    <label>Cost + Fixed Cost</label>
+                    <input type="text" id="calcCostFixed" readonly>
+                </div>
+            </div>
+            <div class="d-flex">
+                <div class="form-group">
+                    <label>Cost + FC/UNIT</label>
+                    <input type="text" id="calcCostFCUnit" readonly>
+                </div>
+            </div>
+            <div class="d-flex">
+                <div class="form-group">
+                    <label>Selling Price (per unit)</label>
+                    <input type="text" id="calcSellingPrice" readonly>
+            </div>
+            <div class="form-group">
+                <label>Profit</label>
+                <input type="text" id="calcProfit" readonly>
+            </div>
+            <div class="dialog-buttons">
+                <button type="button" class="submit-btn" style="background-color: #6c757d" onclick="closeCalculatorModal()">Cancel</button>
+                <button type="button" class="submit-btn" style="background-color: #ffc107; color: #003399;" onclick="useCalculatedPrice()">Use This Price</button>
             </div>
         </div>
     </div>
@@ -372,7 +436,10 @@
                     </div>
                     <div class="form-group">
                         <label>Price per Unit</label>
-                        <input type="number" step="0.01" name="pricePerUnit" required>
+                                                <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="number" step="0.01" name="pricePerUnit" required>
+                            <button type="button" class="submit-btn" style="padding: 0.5rem 1rem; width: auto; background: #ffc107; color: #003399; font-size: 1.1rem;" onclick="openCalculatorModal(this)">🧮</button>
+                        </div>
                     </div>
                 </div>
                 <div class="form-row">
@@ -441,6 +508,64 @@
         function showLoading() {
             document.getElementById('loadingOverlay').style.display = 'flex';
         }
+
+                // Schedule email dialog functions
+        function showScheduleDialog() {
+            document.getElementById('scheduleDialog').style.display = 'flex';
+            // Set minimum datetime to current time
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('scheduleDateTime').min = localDateTime;
+        }
+
+        function closeScheduleDialog() {
+            document.getElementById('scheduleDialog').style.display = 'none';
+        }
+
+        function scheduleEmail() {
+            const emailTo = document.getElementById('scheduleEmailTo').value;
+            const scheduleDateTime = document.getElementById('scheduleDateTime').value;
+            
+            if (!emailTo) {
+                alert('Please enter an email address');
+                return;
+            }
+            
+            if (!scheduleDateTime) {
+                alert('Please select a date and time');
+                return;
+            }
+
+            showLoading();
+            
+            // Add email and schedule time to current form data
+            currentFormData.emailTo = emailTo;
+            currentFormData.scheduleDateTime = scheduleDateTime;
+
+            // Send to server
+            fetch('/schedule-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(currentFormData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                alert(data.message);
+                closeScheduleDialog();
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                alert('An error occurred while scheduling the email: ' + error.message);
+            });
+        }
+
 
         function hideLoading() {
             document.getElementById('loadingOverlay').style.display = 'none';
@@ -519,6 +644,9 @@
             if (formData.action === 'email') {
                 currentFormData = formData;
                 showEmailDialog();
+            } else if (formData.action === 'schedule') {
+                currentFormData = formData;
+                showScheduleDialog();
             } else {
                 showLoading();
                 // Existing print logic
@@ -551,6 +679,56 @@
 
             return false;
         });
+        
+        let currentPriceInput = null;
+
+        function openCalculatorModal(button) {
+            // Find the corresponding part-item
+            const partItem = button.closest('.part-item');
+            // Get the price input for this part
+            currentPriceInput = partItem.querySelector('[name="pricePerUnit"]');
+            // Try to prefill cost price and quantity if available
+            const costInput = partItem.querySelector('[name="pricePerUnit"]');
+            const qtyInput = partItem.querySelector('[name="qty"]');
+            document.getElementById('calcCostPrice').value = costInput.value || '';
+            document.getElementById('calcQuantity').value = qtyInput.value || '';
+            // Trigger calculation
+            calculatorFieldsChanged();
+            document.getElementById('calculatorModal').style.display = 'flex';
+        }
+
+        function closeCalculatorModal() {
+            document.getElementById('calculatorModal').style.display = 'none';
+        }
+
+        function calculatorFieldsChanged() {
+            const costPrice = parseFloat(document.getElementById('calcCostPrice').value) || 0;
+            const quantity = parseInt(document.getElementById('calcQuantity').value) || 0;
+            const fixedCost = 124;
+            const totalCost = costPrice * quantity;
+            const costFixed = totalCost + fixedCost;
+            const costFCUnit = quantity > 0 ? costFixed / quantity : 0;
+            const sellingPrice = costFCUnit > 0 ? (costFCUnit / 0.55) : 0;
+            const profit = (sellingPrice - costFCUnit) * quantity;
+            document.getElementById('calcTotalCost').value = totalCost.toFixed(2);
+            document.getElementById('calcCostFixed').value = costFixed.toFixed(2);
+            document.getElementById('calcCostFCUnit').value = costFCUnit.toFixed(2);
+            document.getElementById('calcSellingPrice').value = sellingPrice.toFixed(2);
+            document.getElementById('calcProfit').value = profit.toFixed(2);
+        }
+
+        document.getElementById('calcCostPrice').addEventListener('input', calculatorFieldsChanged);
+        document.getElementById('calcQuantity').addEventListener('input', calculatorFieldsChanged);
+
+        function useCalculatedPrice() {
+            const sellingPrice = document.getElementById('calcSellingPrice').value;
+            if (currentPriceInput) {
+                currentPriceInput.value = sellingPrice;
+                // Optionally, trigger change event if needed
+                currentPriceInput.dispatchEvent(new Event('input'));
+            }
+            closeCalculatorModal();
+        }
     </script>
 </body>
 </html> 

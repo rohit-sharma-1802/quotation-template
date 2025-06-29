@@ -8,6 +8,7 @@ const pdf = require('html-pdf');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const mongoose = require('mongoose');
+const cron = require('node-cron');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -69,6 +70,29 @@ const quotationSchema = new mongoose.Schema({
 });
 
 const Quotation = mongoose.model('Quotation', quotationSchema);
+
+// Add Scheduled Email Schema
+const scheduledEmailSchema = new mongoose.Schema({
+    quotationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation' },
+    emailTo: String,
+    scheduleDateTime: Date,
+    status: { type: String, enum: ['pending', 'sent', 'failed'], default: 'pending' },
+    htmlContent: String,
+    parts: [{
+        partNo: String,
+        qty: String,
+        dc: String,
+        leadTime: String,
+        condition: String,
+        currency: String,
+        pricePerUnit: String,
+        otherCharges: String
+    }],
+    createdAt: { type: Date, default: Date.now }
+});
+
+const ScheduledEmail = mongoose.model('ScheduledEmail', scheduledEmailSchema);
+
 
 // Routes
 app.get('/', (req, res) => {
@@ -299,6 +323,116 @@ app.get('/quotation/:id/print', authenticateUser, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error generating PDF' });
+    }
+});
+// Add route for scheduling emails
+app.post('/schedule-email', authenticateUser, async (req, res) => {
+    try {
+        const quotationData = req.body;
+        
+        // Save quotation to database
+        const quotation = new Quotation({
+            ...quotationData,
+            type: 'scheduled_email'
+        });
+        await quotation.save();
+
+        // Create HTML content
+        const template = fs.readFileSync(
+            path.join(__dirname, 'templates/email-template.html'), 
+            'utf8'
+        );
+        
+        // Create table rows for parts
+        const partsRows = quotationData.parts.map(part => `
+            <tr>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.partNo}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.qty}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.dc}</td>
+                <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff; text-align: center;">${part.currency} ${part.pricePerUnit}</td>
+            </tr>
+        `).join('');
+        
+        // Replace placeholders with actual data
+        let html = template
+            .replace('[Number]', quotationData.quotationNo)
+            .replace('[Date]', quotationData.date)
+            .replace('[ClientName]', quotationData.clientName)
+            .replace('[CompanyName]', quotationData.clientCompany)
+            .replace('[PreparedByName]', quotationData.preparedByName)
+            .replace('<!-- Parts rows will be inserted here -->', partsRows);
+
+        // Add additional information section
+        const additionalInfo = `
+            <tr>
+                <td style="padding: 0 10px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                        ${quotationData.parts.map(part => `
+                        <tr>
+                            <td>
+                                <p style="color: #0300ff; font-size:12px; margin: 5px 0;"><strong>Part Number: ${part.partNo}</strong></p>
+                                <ul style="list-style-type: disc; padding-left: 20px; margin: -3px 0;">
+                                    <li style="color: #0300ff; font-size:10px;"><strong>Lead Time:</strong> ${part.leadTime}</li>
+                                    <li style="color: #0300ff; font-size:10px;"><strong>Conditions:</strong> ${part.condition}</li>
+                                    <li style="color: #0300ff; font-size:10px;"><strong>Other Charges:</strong> ${part.otherCharges}</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        `).join('')}
+                    </table>
+                </td>
+            </tr>
+        `;
+        
+        html = html.replace('<!-- Additional Information Section will be inserted here -->', additionalInfo);
+
+        // Save scheduled email to database
+        const scheduledEmail = new ScheduledEmail({
+            quotationId: quotation._id,
+            emailTo: quotationData.emailTo,
+            scheduleDateTime: new Date(quotationData.scheduleDateTime),
+            htmlContent: html,
+            parts: quotationData.parts
+        });
+        await scheduledEmail.save();
+
+        res.json({ success: true, message: 'Email scheduled successfully! It will be sent at the specified time.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Cron job to check for scheduled emails every minute
+cron.schedule('* * * * *', async () => {
+    try {
+        const now = new Date();
+        const scheduledEmails = await ScheduledEmail.find({
+            status: 'pending',
+            scheduleDateTime: { $lte: now }
+        }).populate('quotationId');
+
+        for (const scheduledEmail of scheduledEmails) {
+            try {
+                await sendEmail(
+                    scheduledEmail.quotationId.clientName,
+                    scheduledEmail.emailTo,
+                    null,
+                    scheduledEmail.htmlContent,
+                    scheduledEmail.parts
+                );
+                
+                // Update status to sent
+                await ScheduledEmail.findByIdAndUpdate(scheduledEmail._id, { status: 'sent' });
+                console.log(`Scheduled email sent successfully to ${scheduledEmail.emailTo}`);
+            } catch (error) {
+                console.error(`Failed to send scheduled email to ${scheduledEmail.emailTo}:`, error);
+                // Update status to failed
+                await ScheduledEmail.findByIdAndUpdate(scheduledEmail._id, { status: 'failed' });
+            }
+        }
+    } catch (error) {
+        console.error('Error in scheduled email cron job:', error);
     }
 });
 
