@@ -93,7 +93,6 @@ const scheduledEmailSchema = new mongoose.Schema({
 
 const ScheduledEmail = mongoose.model('ScheduledEmail', scheduledEmailSchema);
 
-
 // Routes
 app.get('/', (req, res) => {
     res.redirect('/login');
@@ -145,7 +144,17 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
                 <td style="padding: 12px; border: 1px solid #0300ff; font-size: 13px; color: #0300ff;" text-align: center;>${part.currency} ${part.pricePerUnit}</td>
             </tr>
         `).join('');
-        
+        // Add Maketronics Assurance row after all parts
+        const assuranceRow = `
+            <tr>
+                <td colspan="3" style="border: 1px solid #0300ff; padding: 8px; color: #003399; font-size: 12px; text-align: center;">
+                    <strong>Maketronics Assurance (QC+ Report)—<span style=\"color:rgb(245, 17, 17);\">Optional*</span></strong><br>
+                    <span style="font-size: 10px; color: #4A4A4A;">Recommended for all aged or open-tray components. Detailed inspection report will be shared prior to shipment for customer validation.</span>
+                </td>
+                <td style="border: 1px solid #0300ff; padding: 8px; color: #003399; font-size: 16px; font-weight: bold; text-align: center;">
+                    $120
+                </td>
+            </tr>`;
         // Replace placeholders with actual data
         let html = template
             .replace('[Number]', quotationData.quotationNo)
@@ -153,7 +162,7 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
             .replace('[ClientName]', quotationData.clientName)
             .replace('[CompanyName]', quotationData.clientCompany)
             .replace('[PreparedByName]', quotationData.preparedByName)
-            .replace('<!-- Parts rows will be inserted here -->', partsRows);
+            .replace('<!-- Parts rows will be inserted here -->', partsRows + assuranceRow);
 
         // Add additional information section
         const additionalInfo = `
@@ -220,8 +229,8 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
 async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: true,
+        port: 587,
+        secure: false,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
@@ -325,6 +334,7 @@ app.get('/quotation/:id/print', authenticateUser, async (req, res) => {
         res.status(500).json({ error: 'Error generating PDF' });
     }
 });
+
 // Add route for scheduling emails
 app.post('/schedule-email', authenticateUser, async (req, res) => {
     try {

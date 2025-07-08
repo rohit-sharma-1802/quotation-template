@@ -209,6 +209,75 @@
             margin-top: 10px;
             font-weight: 500;
         }
+        /* --- Calculator Modal Custom Styles --- */
+        #calculatorModal .email-dialog {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            border-radius: 16px;
+            background: #fff;
+            padding: 2rem 1.5rem 1.2rem 1.5rem;
+            max-width: 420px;
+        }
+        #calculatorModal h3 {
+            font-size: 1.2rem;
+            color: #003399;
+            margin-bottom: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+        }
+        #calculatorModal .row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.7rem;
+        }
+        #calculatorModal .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        #calculatorModal label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #003399;
+            margin-bottom: 0.2rem;
+            display: block;
+        }
+        #calculatorModal input[type="number"],
+        #calculatorModal input[type="text"] {
+            width: 100%;
+            padding: 0.5rem 0.7rem;
+            border: 1.5px solid #e1e1e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+        #calculatorModal input:focus {
+            border: 1.5px solid #003399;
+            outline: none;
+        }
+        #calculatorModal .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.7rem;
+            margin-top: 1.2rem;
+        }
+        #calculatorModal .submit-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        #calculatorModal .submit-btn[style*="background-color: #ffc107"] {
+            background: #ffc107;
+            color: #003399;
+        }
+        #calculatorModal .submit-btn[style*="background-color: #6c757d"] {
+            background: #6c757d;
+            color: #fff;
+        }
+        #calculatorModal .submit-btn:hover {
+            filter: brightness(0.95);
+        }
     </style>
 </head>
 <body>
@@ -298,7 +367,7 @@
             <div class="button-group" style="display: flex; gap: 10px; justify-content: center;">
                 <button type="submit" class="submit-btn" name="action" value="print">Print Quotation</button>
                 <button type="submit" class="submit-btn" name="action" value="email">Send Email</button>
-                            <button type="submit" class="submit-btn" name="action" value="schedule" style="background-color: #28a745;">Schedule Email</button>
+                <button type="submit" class="submit-btn" name="action" value="schedule" style="background-color: #28a745;">Schedule Email</button>
             </div>
         </form>
     </div>
@@ -317,6 +386,7 @@
             </div>
         </div>
     </div>
+
     <!-- Schedule Email Dialog -->
     <div class="email-dialog-overlay" id="scheduleDialog">
         <div class="email-dialog">
@@ -338,7 +408,7 @@
 
     <!-- Calculator Modal -->
     <div class="email-dialog-overlay" id="calculatorModal">
-        <div class="email-dialog" style="max-width: 420px;">
+        <div class="email-dialog" style="max-width: 480px;">
             <h3>Price Calculator</h3>
             <div class="row">
                 <div class="form-group col-6">
@@ -352,28 +422,33 @@
             </div>
             <div class="row">
                 <div class="form-group col-6">
+                    <label>Margin</label>
+                    <input type="number" id="calcMargin" step="0.01" min="0.01" max="0.99" value="0.55">
+                </div>
+                <div class="form-group col-6">
                     <label>Total Cost</label>
                     <input type="text" id="calcTotalCost" readonly>
                 </div>
+            </div>
+            <div class="row">
                 <div class="form-group col-6">
                     <label>Cost + Fixed Cost</label>
                     <input type="text" id="calcCostFixed" readonly>
                 </div>
-            </div>
-            <div class="d-flex">
-                <div class="form-group">
+                <div class="form-group col-6">
                     <label>Cost + FC/UNIT</label>
                     <input type="text" id="calcCostFCUnit" readonly>
                 </div>
             </div>
-            <div class="d-flex">
-                <div class="form-group">
+            <div class="row">
+                <div class="form-group col-6">
                     <label>Selling Price (per unit)</label>
                     <input type="text" id="calcSellingPrice" readonly>
-            </div>
-            <div class="form-group">
-                <label>Profit</label>
-                <input type="text" id="calcProfit" readonly>
+                </div>
+                <div class="form-group col-6">
+                    <label>Profit</label>
+                    <input type="text" id="calcProfit" readonly>
+                </div>
             </div>
             <div class="dialog-buttons">
                 <button type="button" class="submit-btn" style="background-color: #6c757d" onclick="closeCalculatorModal()">Cancel</button>
@@ -436,7 +511,7 @@
                     </div>
                     <div class="form-group">
                         <label>Price per Unit</label>
-                                                <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center;">
                             <input type="number" step="0.01" name="pricePerUnit" required>
                             <button type="button" class="submit-btn" style="padding: 0.5rem 1rem; width: auto; background: #ffc107; color: #003399; font-size: 1.1rem;" onclick="openCalculatorModal(this)">🧮</button>
                         </div>
@@ -505,11 +580,7 @@
             document.getElementById('emailDialog').style.display = 'none';
         }
 
-        function showLoading() {
-            document.getElementById('loadingOverlay').style.display = 'flex';
-        }
-
-                // Schedule email dialog functions
+        // Schedule email dialog functions
         function showScheduleDialog() {
             document.getElementById('scheduleDialog').style.display = 'flex';
             // Set minimum datetime to current time
@@ -566,6 +637,9 @@
             });
         }
 
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
 
         function hideLoading() {
             document.getElementById('loadingOverlay').style.display = 'none';
@@ -679,7 +753,7 @@
 
             return false;
         });
-        
+
         let currentPriceInput = null;
 
         function openCalculatorModal(button) {
@@ -704,11 +778,12 @@
         function calculatorFieldsChanged() {
             const costPrice = parseFloat(document.getElementById('calcCostPrice').value) || 0;
             const quantity = parseInt(document.getElementById('calcQuantity').value) || 0;
+            const margin = parseFloat(document.getElementById('calcMargin').value) || 0.55;
             const fixedCost = 124;
             const totalCost = costPrice * quantity;
             const costFixed = totalCost + fixedCost;
             const costFCUnit = quantity > 0 ? costFixed / quantity : 0;
-            const sellingPrice = costFCUnit > 0 ? (costFCUnit / 0.55) : 0;
+            const sellingPrice = (margin > 0 && costFCUnit > 0) ? (costFCUnit / margin) : 0;
             const profit = (sellingPrice - costFCUnit) * quantity;
             document.getElementById('calcTotalCost').value = totalCost.toFixed(2);
             document.getElementById('calcCostFixed').value = costFixed.toFixed(2);
@@ -716,9 +791,9 @@
             document.getElementById('calcSellingPrice').value = sellingPrice.toFixed(2);
             document.getElementById('calcProfit').value = profit.toFixed(2);
         }
-
         document.getElementById('calcCostPrice').addEventListener('input', calculatorFieldsChanged);
         document.getElementById('calcQuantity').addEventListener('input', calculatorFieldsChanged);
+        document.getElementById('calcMargin').addEventListener('input', calculatorFieldsChanged);
 
         function useCalculatedPrice() {
             const sellingPrice = document.getElementById('calcSellingPrice').value;
