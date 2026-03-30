@@ -225,23 +225,71 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
     }
 });
 
-// Updated email sending function
-async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
+function createSmtpTransport() {
+    const user = (process.env.SMTP_USER || '').trim();
+    const pass = (process.env.SMTP_PASS || '').trim();
+    const host = (process.env.SMTP_HOST || '').trim().toLowerCase();
+
+    if (!user || !pass) {
+        throw new Error('SMTP_USER and SMTP_PASS must be set');
+    }
+
+    const smtpDebug =
+        process.env.SMTP_DEBUG === '1' ||
+        process.env.SMTP_DEBUG === 'true';
+
+    // Use Nodemailer's Gmail preset (smtp.gmail.com:465 + TLS) — most reliable for Google SMTP.
+    const useGmailPreset = !host || host === 'smtp.gmail.com';
+
+    if (useGmailPreset) {
+        return nodemailer.createTransport({
+            service: 'Gmail',
+            auth: { user, pass },
+            debug: smtpDebug,
+            logger: smtpDebug
+        });
+    }
+
     const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
     const smtpSecure =
         process.env.SMTP_SECURE === 'true' ||
         String(process.env.SMTP_SECURE) === '1' ||
         smtpPort === 465;
 
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
+    return nodemailer.createTransport({
+        host,
         port: smtpPort,
         secure: smtpSecure,
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        }
+        auth: { user, pass },
+        debug: smtpDebug,
+        logger: smtpDebug
     });
+}
+
+function logSmtpEauthHint(err) {
+    if (err && err.code === 'EAUTH') {
+        console.error(
+            '[SMTP] Google rejected the username/password (EAUTH). Checklist: ' +
+            '(1) Account must use a 16-character App Password, not your normal login password. ' +
+            '(2) Turn on 2-Step Verification for that Google account, then create a new App Password (Mail). ' +
+            '(3) In .env use SMTP_USER=full@email.com and SMTP_PASS with no spaces; wrap in quotes if the password contains #. ' +
+            '(4) Google Workspace: admin must allow App Passwords / SMTP for this user. ' +
+            '(5) Set SMTP_DEBUG=1 temporarily to see SMTP conversation in logs.'
+        );
+    }
+}
+
+// Updated email sending function
+async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
+    const smtpUser = (process.env.SMTP_USER || '').trim();
+
+    let transporter;
+    try {
+        transporter = createSmtpTransport();
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
 
     let subject = `Quotation from Maketronics | ${clientName}`;
     if (parts && parts.length === 1) {
@@ -249,13 +297,18 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
     }
 
     const mailOptions = {
-        from: process.env.SMTP_USER,
+        from: smtpUser,
         to: toEmail,
         subject: subject,
         html: htmlContent
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        logSmtpEauthHint(err);
+        throw err;
+    }
 }
 
 // Add new route to view quotation history
@@ -455,4 +508,14 @@ cron.schedule('* * * * *', async () => {
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
+    const u = (process.env.SMTP_USER || '').trim();
+    const p = (process.env.SMTP_PASS || '').trim();
+    if (u && p) {
+        const masked = u.includes('@')
+            ? `${u.split('@')[0].slice(0, 2)}***@${u.split('@')[1]}`
+            : `${u.slice(0, 2)}***`;
+        console.log(`[SMTP] Credentials loaded for ${masked} (Google requires App Password + 2-Step Verification)`);
+    } else {
+        console.warn('[SMTP] SMTP_USER or SMTP_PASS missing — outbound email will fail until set.');
+    }
 }); 
