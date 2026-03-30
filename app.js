@@ -256,7 +256,9 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
 // Add new route to view quotation history
 app.get('/quotation-history', authenticateUser, async (req, res) => {
     try {
-        const quotations = await Quotation.find().sort({ createdAt: -1 });
+        const since = new Date();
+        since.setDate(since.getDate() - 30);
+        const quotations = await Quotation.find({ createdAt: { $gte: since } }).sort({ createdAt: -1 });
         res.render('quotation-history', { quotations });
     } catch (error) {
         console.error(error);
