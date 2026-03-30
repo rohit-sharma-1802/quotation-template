@@ -227,10 +227,16 @@ app.post('/generate-invoice', authenticateUser, async (req, res) => {
 
 // Updated email sending function
 async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
+    const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
+    const smtpSecure =
+        process.env.SMTP_SECURE === 'true' ||
+        String(process.env.SMTP_SECURE) === '1' ||
+        smtpPort === 465;
+
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: 587,
-        secure: false,
+        port: smtpPort,
+        secure: smtpSecure,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
@@ -243,9 +249,8 @@ async function sendEmail(clientName, toEmail, pdfBuffer, htmlContent, parts) {
     }
 
     const mailOptions = {
-        from: 'sales@make-tronics.com',
+        from: process.env.SMTP_USER,
         to: toEmail,
-        cc: 'sales@make-tronics.com',
         subject: subject,
         html: htmlContent
     };
