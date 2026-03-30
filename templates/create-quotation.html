@@ -363,12 +363,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="preparedByName">Name</label>
-                        <select id="preparedByName" required>
-                            <option value="Madhur Gandhi">Madhur Gandhi</option>
-                            <option value="Carl Henderson">Carl Henderson</option>
-                            <option value="Kaushik Iyer">Kaushik Iyer</option>
-                            <option value="Shubham">Shubham</option>
-                        </select>
+                        <input type="text" id="preparedByName" readonly required style="background-color: #f8f9fa;">
+                        <p id="preparedByEmailHint" style="font-size: 0.82rem; color: #555; margin-top: 0.4rem;"></p>
                     </div>
                     <div class="form-group">
                         <label for="preparedByCompany">Company Name</label>
@@ -520,6 +516,21 @@
             
             // Add initial part
             addPart();
+
+            fetch('/api/me', { credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (me) {
+                    if (me && me.name) {
+                        document.getElementById('preparedByName').value = me.name;
+                    }
+                    if (me && me.email) {
+                        var hint = document.getElementById('preparedByEmailHint');
+                        if (hint) {
+                            hint.textContent = 'Quotations and email are tied to: ' + me.email;
+                        }
+                    }
+                })
+                .catch(function () {});
         }
 
         // Update the part template to remove these fields from the table

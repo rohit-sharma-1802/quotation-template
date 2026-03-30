@@ -7,13 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Add Google Sign-In API -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Add LinkedIn Sign-In API -->
-    <script src="//platform.linkedin.com/in.js">
-        api_key: YOUR_LINKEDIN_API_KEY   // Replace with your LinkedIn API key
-        authorize: true
-    </script>
     <style>
         * {
             margin: 0;
@@ -188,6 +181,33 @@
             width: 20px;
             height: 20px;
         }
+
+        .login-error {
+            background-color: #fde8e8;
+            color: #c0392b;
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.25rem 0;
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e1e1e1;
+        }
     </style>
 </head>
 <body>
@@ -196,6 +216,14 @@
             <img src="https://i.imgur.com/Aey3PSi.png" alt="Maketronics Logo">
             <h1>Welcome Back</h1>
         </div>
+        {{#if error}}
+        <div class="login-error">{{error}}</div>
+        {{/if}}
+        <a href="/auth/google" class="social-login-button google-login" style="text-decoration: none;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+            <span>Continue with Google</span>
+        </a>
+        <div class="divider">or use email</div>
         <form id="loginForm" action="/login" method="post">
             <div class="form-group">
                 <label for="email">Email</label>
